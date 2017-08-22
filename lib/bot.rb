@@ -13,16 +13,26 @@ Bot.on :message do |message|
 
       intent = response.intent
       location = response.get('location')
+      puts "intent: #{intent.inspect}"
       puts "location: #{location.inspect}"
 
-      # message.reply(text: 'hello I am the Country Bot')
-      message.reply(text: "Your intent is #{intent.slug}") if intent
-      message.reply(text: "The location is #{location.formatted}") if location
+      if intent.slug == 'know-population' && location
+        country = location.formatted
+        data = Restcountry::Country.find_by_name(country)
+        population = data.population.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse
+
+        message.reply(text: "#{country} has #{population} habitants")
+        # message.reply(text: "The capital of #{country} is #{data.capital}")
+      else
+        message.reply(text: "Sorry I did not quite get that")
+      end
+    else
+      message.reply(text: "I only respond to text")
     end
   rescue => e
     puts "============"
     puts e
     puts "============"
-    message.reply(text: "Sorry there was an error")
+    message.reply(text: "#{e}")
   end
 end
